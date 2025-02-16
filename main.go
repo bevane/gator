@@ -7,8 +7,20 @@ import (
 )
 
 func main() {
-	configFile := config.Read()
-	configFile.SetUser("bevane")
-	updatedConfigFile := config.Read()
+	configFile, err := config.Read()
+	if err != nil {
+		fmt.Printf("Error reading config file: %v", err)
+		return
+	}
+	err = configFile.SetUser("bevane")
+	if err != nil {
+		fmt.Printf("Error setting user in config: %v", err)
+		return
+	}
+	updatedConfigFile, err := config.Read()
+	if err != nil {
+		fmt.Printf("Error reading config file: %v", err)
+		return
+	}
 	fmt.Println(updatedConfigFile)
 }

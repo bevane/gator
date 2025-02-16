@@ -11,23 +11,45 @@ type Config struct {
 	CurrentUserName string `json:"current_user_name"`
 }
 
-func Read() Config {
+func Read() (Config, error) {
 	config := Config{}
-	configFilePath := getConfigFilePath()
-	data, _ := os.ReadFile(configFilePath)
-	json.Unmarshal(data, &config)
-	return config
+	configFilePath, err := getConfigFilePath()
+	if err != nil {
+		return config, err
+	}
+	data, err := os.ReadFile(configFilePath)
+	if err != nil {
+		return config, err
+	}
+	err = json.Unmarshal(data, &config)
+	if err != nil {
+		return config, err
+	}
+	return config, nil
 }
 
-func (c *Config) SetUser(username string) {
-	configFilePath := getConfigFilePath()
+func (c *Config) SetUser(username string) error {
+	configFilePath, err := getConfigFilePath()
+	if err != nil {
+		return err
+	}
 	c.CurrentUserName = username
-	data, _ := json.Marshal(c)
-	os.WriteFile(configFilePath, data, 0666)
+	data, err := json.Marshal(c)
+	if err != nil {
+		return err
+	}
+	err = os.WriteFile(configFilePath, data, 0666)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func getConfigFilePath() string {
-	homeDir, _ := os.UserHomeDir()
+func getConfigFilePath() (string, error) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
 	configFilePath := filepath.Join(homeDir, "gatorconfig.json")
-	return configFilePath
+	return configFilePath, nil
 }
