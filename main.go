@@ -1,20 +1,30 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"os"
 
 	"github.com/bevane/gator/internal/config"
+	"github.com/bevane/gator/internal/database"
+
+	_ "github.com/lib/pq"
 )
 
 func main() {
 	appState := state{}
 	cfg, err := config.Read()
+	db, err := sql.Open("postgres", cfg.DbUrl)
+	if err != nil {
+		fmt.Printf("Error opening db: %v\n", err)
+		os.Exit(1)
+	}
+	appState.db = database.New(db)
 	if err != nil {
 		fmt.Printf("Error reading config file: %v\n", err)
 		os.Exit(1)
 	}
-	appState.configPtr = &cfg
+	appState.cfg = &cfg
 
 	appCommands := commands{nameToCommand: make(map[string]func(*state, command) error)}
 	appCommands.register("login", handlerLogin)

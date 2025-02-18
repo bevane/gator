@@ -4,10 +4,12 @@ import (
 	"fmt"
 
 	"github.com/bevane/gator/internal/config"
+	"github.com/bevane/gator/internal/database"
 )
 
 type state struct {
-	configPtr *config.Config
+	cfg *config.Config
+	db  *database.Queries
 }
 
 type command struct {
@@ -41,7 +43,7 @@ func handlerLogin(s *state, cmd command) error {
 		return fmt.Errorf("The login command expects one argument: username")
 	}
 	username := cmd.args[0]
-	err := s.configPtr.SetUser(username)
+	err := s.cfg.SetUser(username)
 	if err != nil {
 		return err
 	}
