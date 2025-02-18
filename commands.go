@@ -1,10 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"time"
 
 	"github.com/bevane/gator/internal/config"
 	"github.com/bevane/gator/internal/database"
+	"github.com/google/uuid"
 )
 
 type state struct {
@@ -43,10 +46,38 @@ func handlerLogin(s *state, cmd command) error {
 		return fmt.Errorf("The login command expects one argument: username")
 	}
 	username := cmd.args[0]
-	err := s.cfg.SetUser(username)
+	_, err := s.db.GetUser(context.Background(), username)
+	if err != nil {
+		return fmt.Errorf("%s does not exist", username)
+	}
+	err = s.cfg.SetUser(username)
 	if err != nil {
 		return err
 	}
 	fmt.Printf("User has been set to: %v\n", username)
+	return nil
+}
+
+func handlerRegister(s *state, cmd command) error {
+	if len(cmd.args) == 0 {
+		return fmt.Errorf("The login command expects one argument: username")
+	}
+	username := cmd.args[0]
+	user, err := s.db.CreateUser(context.Background(), database.CreateUserParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		Name:      username,
+	})
+	if err != nil {
+		return fmt.Errorf("%s already exists", username)
+	}
+	fmt.Printf("New user registerd: %v\n", user)
+	err = s.cfg.SetUser(username)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("User has been set to: %v\n", username)
+
 	return nil
 }

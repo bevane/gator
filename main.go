@@ -28,6 +28,7 @@ func main() {
 
 	appCommands := commands{nameToCommand: make(map[string]func(*state, command) error)}
 	appCommands.register("login", handlerLogin)
+	appCommands.register("register", handlerRegister)
 
 	userArgs := os.Args
 	if len(userArgs) < 2 {
