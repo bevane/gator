@@ -117,3 +117,30 @@ func handlerAgg(s *state, cmd command) error {
 	fmt.Println(rssFeed)
 	return nil
 }
+
+func handlerAddFeed(s *state, cmd command) error {
+	username := s.cfg.CurrentUserName
+	user, err := s.db.GetUser(context.Background(), username)
+	if err != nil {
+		return fmt.Errorf("Error getting current user: user %s does not exist", username)
+	}
+	userId := user.ID
+	if len(cmd.args) < 2 {
+		return fmt.Errorf("The addfeed command expects two arguments: name, url")
+	}
+	name := cmd.args[0]
+	url := cmd.args[1]
+	feed, err := s.db.CreateFeed(context.Background(), database.CreateFeedParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		Name:      name,
+		Url:       url,
+		UserID:    userId,
+	})
+	if err != nil {
+		return fmt.Errorf("Failed to add rss feed: %v", err)
+	}
+	fmt.Println(feed)
+	return nil
+}

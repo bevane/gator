@@ -5,7 +5,7 @@ create table feeds (
 	updated_at timestamp not null,
 	name text not null,
 	url text not null unique,
-	user_id UUID references users(id) on delete cascade
+	user_id UUID not null references users(id) on delete cascade
 );
 
 -- +goose Down
