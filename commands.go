@@ -144,3 +144,14 @@ func handlerAddFeed(s *state, cmd command) error {
 	fmt.Println(feed)
 	return nil
 }
+
+func handlerFeeds(s *state, cmd command) error {
+	feeds, err := s.db.GetFeedsWithUserName(context.Background())
+	if err != nil {
+		return fmt.Errorf("Failed to get rss feeds: %v", err)
+	}
+	for _, feed := range feeds {
+		fmt.Printf("%v | %v | %v\n", feed.Name, feed.Url, feed.Name_2)
+	}
+	return nil
+}
