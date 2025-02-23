@@ -151,7 +151,35 @@ func handlerFeeds(s *state, cmd command) error {
 		return fmt.Errorf("Failed to get rss feeds: %v", err)
 	}
 	for _, feed := range feeds {
-		fmt.Printf("%v | %v | %v\n", feed.Name, feed.Url, feed.Name_2)
+		fmt.Println(feed)
 	}
+	return nil
+}
+
+func handlerFollow(s *state, cmd command) error {
+	if len(cmd.args) < 1 {
+		return fmt.Errorf("The follow command expects one argument: url")
+	}
+	url := cmd.args[0]
+	username := s.cfg.CurrentUserName
+	user, err := s.db.GetUser(context.Background(), username)
+	if err != nil {
+		return fmt.Errorf("Error getting current user: user %s does not exist", username)
+	}
+	feed, err := s.db.GetFeedByUrl(context.Background(), url)
+	if err != nil {
+		return fmt.Errorf("Feed does not exist for url: %v", url)
+	}
+	feedFollow, err := s.db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		UserID:    user.ID,
+		FeedID:    feed.ID,
+	})
+	if err != nil {
+		return fmt.Errorf("Failed to get feed follow: %v", err)
+	}
+	fmt.Printf("%v followed %v\n", feedFollow.UserName, feedFollow.FeedName)
 	return nil
 }
