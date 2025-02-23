@@ -183,3 +183,22 @@ func handlerFollow(s *state, cmd command) error {
 	fmt.Printf("%v followed %v\n", feedFollow.UserName, feedFollow.FeedName)
 	return nil
 }
+
+func handlerFollowing(s *state, cmd command) error {
+	username := s.cfg.CurrentUserName
+	user, err := s.db.GetUser(context.Background(), username)
+	if err != nil {
+		return fmt.Errorf("Error getting current user: user %s does not exist", username)
+	}
+	feedFollows, err := s.db.GetFeedFollowsForUser(context.Background(), user.ID)
+	if len(feedFollows) == 0 {
+		fmt.Printf("%v has not followd any feeds\n", user.Name)
+		return nil
+	}
+	out := ""
+	for _, feedFollow := range feedFollows {
+		out += feedFollow.FeedName + "\n"
+	}
+	fmt.Printf("%v has followed:\n%s", user.Name, out)
+	return nil
+}
