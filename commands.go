@@ -124,7 +124,6 @@ func handlerAddFeed(s *state, cmd command) error {
 	if err != nil {
 		return fmt.Errorf("Error getting current user: user %s does not exist", username)
 	}
-	userId := user.ID
 	if len(cmd.args) < 2 {
 		return fmt.Errorf("The addfeed command expects two arguments: name, url")
 	}
@@ -136,10 +135,20 @@ func handlerAddFeed(s *state, cmd command) error {
 		UpdatedAt: time.Now(),
 		Name:      name,
 		Url:       url,
-		UserID:    userId,
+		UserID:    user.ID,
 	})
 	if err != nil {
 		return fmt.Errorf("Failed to add rss feed: %v", err)
+	}
+	_, err = s.db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		UserID:    user.ID,
+		FeedID:    feed.ID,
+	})
+	if err != nil {
+		return fmt.Errorf("Failed to create feed follow: %v", err)
 	}
 	fmt.Println(feed)
 	return nil
@@ -178,7 +187,7 @@ func handlerFollow(s *state, cmd command) error {
 		FeedID:    feed.ID,
 	})
 	if err != nil {
-		return fmt.Errorf("Failed to get feed follow: %v", err)
+		return fmt.Errorf("Failed to create feed follow: %v", err)
 	}
 	fmt.Printf("%v followed %v\n", feedFollow.UserName, feedFollow.FeedName)
 	return nil
