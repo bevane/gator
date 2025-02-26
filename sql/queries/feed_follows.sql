@@ -20,3 +20,16 @@ select *, users.name as user_name, feeds.name as feed_name from feed_follows
 join users on feed_follows.user_id = users.id
 join feeds on feed_follows.feed_id = feeds.id
 where feed_follows.user_id = $1;
+
+
+-- name: DeleteFeedFollowForUserByUrl :exec
+delete from feed_follows
+    where feed_follows.id in (
+    select feed_follows.id from feed_follows
+    join users on feed_follows.user_id = users.id
+    join feeds on feed_follows.feed_id = feeds.id
+    where feed_follows.user_id = $1
+    and feeds.url = $2
+);
+
+

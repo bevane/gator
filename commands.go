@@ -199,3 +199,19 @@ func handlerFollowing(s *state, cmd command, user database.User) error {
 	fmt.Printf("%v has followed:\n%s", user.Name, out)
 	return nil
 }
+
+func handlerUnfollow(s *state, cmd command, user database.User) error {
+	if len(cmd.args) < 1 {
+		return fmt.Errorf("The follow command expects one argument: url")
+	}
+	url := cmd.args[0]
+	err := s.db.DeleteFeedFollowForUserByUrl(context.Background(), database.DeleteFeedFollowForUserByUrlParams{
+		UserID: user.ID,
+		Url:    url,
+	})
+	if err != nil {
+		return fmt.Errorf("Failed to delete feed follow: %v", err)
+	}
+	fmt.Printf("%v unfollowed:\n%s", user.Name, url)
+	return nil
+}
