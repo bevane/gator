@@ -109,13 +109,18 @@ func handlerUsers(s *state, cmd command) error {
 }
 
 func handlerAgg(s *state, cmd command) error {
-	url := "https://www.wagslane.dev/index.xml"
-	rssFeed, err := fetchFeed(context.Background(), url)
-	if err != nil {
-		return fmt.Errorf("Failed to fetch rss feed: %v", err)
+	if len(cmd.args) < 1 {
+		return fmt.Errorf("The agg command expects one argument: time_between_reqs")
 	}
-	fmt.Println(rssFeed)
-	return nil
+	timeBetweenRequests, err := time.ParseDuration(cmd.args[0])
+	if err != nil {
+		return fmt.Errorf("Failed to parse duration: %v", err)
+	}
+	ticker := time.NewTicker(timeBetweenRequests)
+	fmt.Printf("Collecting feeds every %v\n", timeBetweenRequests)
+	for ; ; <-ticker.C {
+		scrapeFeeds(s)
+	}
 }
 
 func handlerAddFeed(s *state, cmd command, user database.User) error {
