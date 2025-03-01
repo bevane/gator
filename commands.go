@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/bevane/gator/internal/config"
@@ -218,5 +219,36 @@ func handlerUnfollow(s *state, cmd command, user database.User) error {
 		return fmt.Errorf("Failed to delete feed follow: %v", err)
 	}
 	fmt.Printf("%v unfollowed:\n%s", user.Name, url)
+	return nil
+}
+
+func handlerBrowse(s *state, cmd command, user database.User) error {
+	var limit int
+	var err error
+	if len(cmd.args) < 1 {
+		limit = 2
+	} else {
+		limit, err = strconv.Atoi(cmd.args[0])
+		if err != nil {
+			return fmt.Errorf("Argument to browse must be a number")
+		}
+	}
+	posts, err := s.db.GetPostsForUser(context.Background(), database.GetPostsForUserParams{
+		UserID: user.ID,
+		Limit:  int32(limit),
+	})
+	if err != nil {
+		return fmt.Errorf("Failed to get posts: %v", err)
+	}
+	var out string
+	for _, post := range posts {
+		out += "============================================\n"
+		out += post.Title + "\n"
+		out += post.Url + "\n"
+		out += post.Description.String + "\n"
+		out += post.PublishedAt.Time.String() + "\n"
+	}
+	out += "========================================================\n"
+	fmt.Println(out)
 	return nil
 }
